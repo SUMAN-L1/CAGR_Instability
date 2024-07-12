@@ -1,69 +1,72 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from math import sqrt
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
 
-# Function to calculate CAGR
-def calculate_cagr(df, start_col, end_col, period):
-    df['CAGR'] = ((df[end_col] / df[start_col]) ** (1 / period)) - 1
-    return df['CAGR']
+# Function to compute CAGR and p-value
+def compute_cagr(data, column):
+    # Ensure data is a pandas DataFrame
+    if isinstance(data, pd.Series):
+        data = data.to_frame()
+    
+    # Add a time variable, which is equally spaced
+    data['Time'] = np.arange(1, len(data) + 1)
+    
+    # Apply natural log transformation to the target column
+    data['LogColumn'] = np.log(data[column])
+    
+    # Perform the regression
+    model = ols('LogColumn ~ Time', data=data).fit()
+    
+    # Compute CAGR
+    cagr = np.exp(model.params['Time']) - 1
+    
+    # Extract p-value and adjusted R-squared
+    p_value = model.pvalues['Time']
+    adj_r_squared = model.rsquared_adj
+    
+    return cagr, p_value, adj_r_squared
 
-# Function to calculate basic statistics
-def calculate_statistics(df, col):
-    mean = df[col].mean()
-    std_dev = df[col].std()
-    cv = std_dev / mean
-    return mean, std_dev, cv
+# Function to compute mean, standard deviation, and coefficient of variation
+def compute_statistics(data, column):
+    mean_val = data[column].mean()
+    std_val = data[column].std()
+    cv_val = (std_val / mean_val)*100
+    return mean_val, std_val, cv_val
 
-# Function to calculate instability using the CDVI index
-def calculate_cdvi(cv, adj_r_squared):
-    cdvi = cv * np.sqrt(1 - adj_r_squared)
+# Function to compute CDVI
+def compute_cdvi(cv, adj_r_squared):
+    cdvi = cv * sqrt(1 - adj_r_squared)
     return cdvi
 
-st.title('Data Analysis App')
+# Streamlit app
+st.title('Trend Analyser by [Suman L](https://github.com/SUMAN-L1)')
 
-# Upload file
-uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx"])
+# File upload
+uploaded_file = st.file_uploader("Upload a CSV, XLSX, or XLS file", type=["csv", "xlsx", "xls"])
 
 if uploaded_file:
     if uploaded_file.name.endswith('.csv'):
-        df = pd.read_csv(uploaded_file)
-    elif uploaded_file.name.endswith('.xlsx'):
-        df = pd.read_excel(uploaded_file)
+        data = pd.read_csv(uploaded_file)
+    elif uploaded_file.name.endswith('.xlsx') or uploaded_file.name.endswith('.xls'):
+        data = pd.read_excel(uploaded_file)
     
     st.write("Data Preview:")
-    st.write(df.head())
-
-    # Select columns for CAGR calculation
-    col = st.selectbox('Select column for analysis', df.columns)
-    start_col = st.selectbox('Select start column for CAGR', df.columns)
-    end_col = st.selectbox('Select end column for CAGR', df.columns)
-    period = st.number_input('Enter the number of periods for CAGR calculation', min_value=1, step=1)
-
-    if st.button('Calculate'):
-        cagr = calculate_cagr(df, start_col, end_col, period)
-        mean, std_dev, cv = calculate_statistics(df, col)
-        adj_r_squared = st.number_input('Enter adjusted R-squared value', min_value=0.0, max_value=1.0, step=0.01)
-        cdvi = calculate_cdvi(cv, adj_r_squared)
-
-        st.write("CAGR Calculation:")
-        st.write(f"CAGR: {cagr.head()}")
-
-        st.write("Basic Statistics:")
-        st.write(f"Mean: {mean}")
-        st.write(f"Standard Deviation: {std_dev}")
-        st.write(f"Coefficient of Variation: {cv}")
-
-        st.write("CDVI Calculation:")
-        st.write(f"CDVI: {cdvi}")
-
-        # Displaying all results in a dataframe
-        results = pd.DataFrame({
-            'CAGR': cagr,
-            'Mean': mean,
-            'Standard Deviation': std_dev,
-            'Coefficient of Variation': cv,
-            'CDVI': cdvi
-        }, index=[0])
-
-        st.write("All Results:")
-        st.write(results)
+    st.write(data.head())
+    
+    column = st.selectbox("Select the target column", data.columns)
+    
+    if st.button('Compute CAGR and Statistics'):
+        cagr, p_value, adj_r_squared = compute_cagr(data, column)
+        mean_val, std_val, cv_val = compute_statistics(data, column)
+        cdvi = compute_cdvi(cv_val, adj_r_squared)
+        
+        st.write(f"CAGR: {cagr:.2%}")
+        st.write(f"P-Value: {p_value:.10f}")
+        st.write(f"Mean: {mean_val:.2f}")
+        st.write(f"Standard Deviation: {std_val:.2f}")
+        st.write(f"Coefficient of Variation (CV): {cv_val:.2f}")
+        st.write(f"Adjusted R Square: {adj_r_squared:.2f}")
+        st.write(f"Cuddy Della Valle Index (CDVI): {cdvi:.2f}")
