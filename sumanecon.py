@@ -58,4 +58,4 @@ if uploaded_file:
     if st.button('Calculate CDVI'):
         cdvi = calculate_cdvi(cv, adj_r_squared)
         st.write(f"CDVI: {cdvi}")
-streamlit run app.py
+
