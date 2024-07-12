@@ -33,7 +33,7 @@ def compute_cagr(data, column):
 def compute_statistics(data, column):
     mean_val = data[column].mean()
     std_val = data[column].std()
-    cv_val = (std_val / mean_val)*100
+    cv_val = (std_val / mean_val) * 100
     return mean_val, std_val, cv_val
 
 # Function to compute CDVI
@@ -56,17 +56,25 @@ if uploaded_file:
     st.write("Data Preview:")
     st.write(data.head())
     
-    column = st.selectbox("Select the target column", data.columns)
-    
-    if st.button('Compute CAGR and Statistics'):
-        cagr, p_value, adj_r_squared = compute_cagr(data, column)
-        mean_val, std_val, cv_val = compute_statistics(data, column)
-        cdvi = compute_cdvi(cv_val, adj_r_squared)
+    if st.button('Compute CAGR and Statistics for All Columns'):
+        results = []
+
+        for column in data.columns:
+            if pd.api.types.is_numeric_dtype(data[column]):
+                cagr, p_value, adj_r_squared = compute_cagr(data, column)
+                mean_val, std_val, cv_val = compute_statistics(data, column)
+                cdvi = compute_cdvi(cv_val, adj_r_squared)
+                
+                results.append({
+                    'Column': column,
+                    'CAGR': cagr,
+                    'P-Value': p_value,
+                    'Mean': mean_val,
+                    'Standard Deviation': std_val,
+                    'Coefficient of Variation (CV)': cv_val,
+                    'Adjusted R Squared': adj_r_squared,
+                    'Cuddy Della Valle Index (CDVI)': cdvi
+                })
         
-        st.write(f"CAGR: {cagr:.2%}")
-        st.write(f"P-Value: {p_value:.10f}")
-        st.write(f"Mean: {mean_val:.2f}")
-        st.write(f"Standard Deviation: {std_val:.2f}")
-        st.write(f"Coefficient of Variation (CV): {cv_val:.2f}")
-        st.write(f"Adjusted R Square: {adj_r_squared:.2f}")
-        st.write(f"Cuddy Della Valle Index (CDVI): {cdvi:.2f}")
+        results_df = pd.DataFrame(results)
+        st.write(results_df)
