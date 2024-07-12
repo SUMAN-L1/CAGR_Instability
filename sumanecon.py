@@ -4,7 +4,6 @@ import numpy as np
 from math import sqrt
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
-import io
 
 # Function to compute CAGR and p-value
 def compute_cagr(data, column):
@@ -41,19 +40,6 @@ def compute_statistics(data, column):
 def compute_cdvi(cv, adj_r_squared):
     cdvi = cv * sqrt(1 - adj_r_squared)
     return cdvi
-
-# Function to convert DataFrame to CSV
-def convert_df_to_csv(df):
-    return df.to_csv(index=False).encode('utf-8')
-
-# Function to convert DataFrame to Excel
-def convert_df_to_excel(df):
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Sheet1')
-        writer.save()
-    processed_data = output.getvalue()
-    return processed_data
 
 # Streamlit app
 st.title('Trend Analyser by [SumanEcon]')
@@ -92,20 +78,3 @@ if uploaded_file:
         
         results_df = pd.DataFrame(results)
         st.write(results_df)
-        
-        csv_data = convert_df_to_csv(results_df)
-        excel_data = convert_df_to_excel(results_df)
-        
-        st.download_button(
-            label="Download data as CSV",
-            data=csv_data,
-            file_name='results.csv',
-            mime='text/csv',
-        )
-        
-        st.download_button(
-            label="Download data as Excel",
-            data=excel_data,
-            file_name='results.xlsx',
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        )
