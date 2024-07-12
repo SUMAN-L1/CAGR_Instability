@@ -21,7 +21,7 @@ def compute_cagr(data, column):
     model = ols('LogColumn ~ Time', data=data).fit()
     
     # Compute CAGR
-    cagr = np.exp(model.params['Time']) - 1
+    cagr = (np.exp(model.params['Time']) - 1)*100
     
     # Extract p-value and adjusted R-squared
     p_value = model.pvalues['Time']
