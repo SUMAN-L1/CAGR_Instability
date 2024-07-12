@@ -21,7 +21,7 @@ def compute_cagr(data, column):
     model = ols('LogColumn ~ Time', data=data).fit()
     
     # Compute CAGR
-    cagr = (np.exp(model.params['Time']) - 1)*100
+    cagr = (np.exp(model.params['Time']) - 1) * 100  # Convert to percentage
     
     # Extract p-value and adjusted R-squared
     p_value = model.pvalues['Time']
@@ -67,13 +67,13 @@ if uploaded_file:
                 
                 results.append({
                     'Column': column,
-                    'CAGR': cagr,
-                    'P-Value': p_value,
-                    'Mean': mean_val,
-                    'Standard Deviation': std_val,
-                    'Coefficient of Variation (CV)': cv_val,
-                    'Adjusted R Squared': adj_r_squared,
-                    'Cuddy Della Valle Index (CDVI)': cdvi
+                    'CAGR (%)': f"{cagr:.2f}",
+                    'P-Value': f"{p_value:.6f}",
+                    'Mean': f"{mean_val:.2f}",
+                    'Standard Deviation': f"{std_val:.2f}",
+                    'Coefficient of Variation (CV) (%)': f"{cv_val:.2f}",
+                    'Adjusted R Squared': f"{adj_r_squared:.2f}",
+                    'Cuddy Della Valle Index (CDVI)': f"{cdvi:.2f}"
                 })
         
         results_df = pd.DataFrame(results)
