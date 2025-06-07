@@ -111,13 +111,13 @@ if uploaded_file:
 
                 results.append({
                     'Indicator': column,
-                    'CAGR (%)': round(cagr, 2),
-                    'P-Value': round(p_value, 6),
-                    'Mean': round(mean_val, 2),
-                    'Standard Deviation': round(std_val, 2),
-                    'CV (%)': round(cv_val, 2),
-                    'Adjusted R²': round(adj_r_squared, 3),
-                    'CDVI': round(cdvi, 2),
+                    'CAGR (%)': f"{cagr:.2f}",
+                    'P-Value': f"{p_value:.4f}",
+                    'Mean': f"{mean_val:.2f}",
+                    'Standard Deviation': f"{std_val:.2f}",
+                    'CV (%)': f"{cv_val:.2f}",
+                    'Adjusted R²': f"{adj_r_squared:.3f}",
+                    'CDVI': f"{cdvi:.2f}",
                     'Interpretation': interp
                 })
             except Exception as e:
