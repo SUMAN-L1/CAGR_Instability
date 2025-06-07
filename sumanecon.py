@@ -3,9 +3,8 @@ import pandas as pd
 import numpy as np
 from math import sqrt
 from statsmodels.formula.api import ols
-import seaborn as sns
-import matplotlib.pyplot as plt
 from io import BytesIO
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 # ========== Function Definitions ==========
@@ -35,18 +34,9 @@ def economic_interpretation(cagr, cdvi, pval):
     significance = "significant" if pval < 0.05 else "not statistically significant"
     return f"The trend is {trend_msg}, the variability is {stability_msg}, and the trend is {significance}."
 
-def convert_fig_to_bytes(fig, format='png'):
-    img_bytes = BytesIO()
-    fig.savefig(img_bytes, format=format, bbox_inches='tight')
-    img_bytes.seek(0)
-    return img_bytes
-
-def generate_pdf(results_df, fig):
+def generate_pdf(results_df):
     buffer = BytesIO()
     with PdfPages(buffer) as pdf:
-        # Plot page
-        pdf.savefig(fig, bbox_inches='tight')
-
         # Table page
         fig_table, ax = plt.subplots(figsize=(12, len(results_df)*0.5 + 1))
         ax.axis('off')
@@ -144,42 +134,17 @@ if uploaded_file:
         st.download_button("Download CSV", csv, file_name="CAGR_CDVI_Results.csv")
         st.download_button("Download Excel", excel, file_name="CAGR_CDVI_Results.xlsx")
 
-        # ---- Plot: CAGR vs CDVI ----
-        st.subheader("📉 CAGR vs CDVI Plot")
-        valid_df = results_df[results_df['CAGR (%)'] != 'Error'].copy()
-
-        if not valid_df.empty:
-            fig, ax = plt.subplots(figsize=(8, 5))
-            sns.scatterplot(data=valid_df, x='CAGR (%)', y='CDVI', hue='Indicator', s=120, ax=ax)
-
-            for i, row in valid_df.iterrows():
-                ax.annotate(row['Indicator'], (row['CAGR (%)'], row['CDVI']), fontsize=9)
-
-            ax.axhline(20, color='red', linestyle='--', label='CDVI = 20')
-            ax.axvline(0, color='gray', linestyle=':')
-            ax.set_title("CAGR vs Instability (CDVI)")
-            ax.legend()
-            st.pyplot(fig)
-
-            # ---- Download Plot Options ----
-            st.markdown("### 📸 Download Plot")
-            for fmt in ['png', 'jpg', 'jpeg', 'pdf']:
-                st.download_button(f"Download as .{fmt.upper()}",
-                                   convert_fig_to_bytes(fig, fmt),
-                                   file_name=f'CAGR_CDVI_Plot.{fmt}',
-                                   mime=f"image/{fmt if fmt != 'pdf' else 'pdf'}")
-
-            # ---- Generate and Download PDF Summary ----
-            st.markdown("### 🧾 Download Full PDF Report")
-            pdf_bytes = generate_pdf(valid_df, fig)
-            st.download_button("Download PDF Report", pdf_bytes, file_name="CAGR_CDVI_Report.pdf", mime="application/pdf")
+        # ---- Generate and Download PDF Summary ----
+        st.markdown("### 🧾 Download Full PDF Report")
+        pdf_bytes = generate_pdf(results_df)
+        st.download_button("Download PDF Report", pdf_bytes, file_name="CAGR_CDVI_Report.pdf", mime="application/pdf")
 
         # ---- Policy Briefs ----
         st.subheader("📌 Policy Brief Suggestions")
-        for row in results_df.itertuples():
-            if row._9 != "Error":
+        for idx, row in results_df.iterrows():
+            if row['Interpretation'] != "Error":
                 st.markdown(f"""
-                **{row.Indicator}:**
-                - {row.Interpretation}
-                - 📈 **Policy Tip:** For `{row.Indicator}`, consider policies to {"enhance growth" if row._2 > 0 else "arrest decline"}, and if CDVI is high, ensure **price stabilization**, market intelligence, and infrastructure for storage or value addition.
+                **{row['Indicator']}:**
+                - {row['Interpretation']}
+                - 📈 **Policy Tip:** For `{row['Indicator']}`, consider policies to {"enhance growth" if row['CAGR (%)'] > 0 else "arrest decline"}, and if CDVI is high, ensure **price stabilization**, market intelligence, and infrastructure for storage or value addition.
                 """)
