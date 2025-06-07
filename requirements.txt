@@ -1,5 +1,8 @@
-statsmodels
+streamlit
 pandas
 numpy
+matplotlib
+seaborn
+statsmodels
 openpyxl
-
+xlsxwriter
