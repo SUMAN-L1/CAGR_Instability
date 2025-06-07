@@ -7,7 +7,7 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-# ========== Function Definitions ==========
+# ================= Function Definitions =================
 
 def compute_cagr(data, column):
     data = data.copy()
@@ -37,33 +37,38 @@ def economic_interpretation(cagr, cdvi, pval):
 def generate_pdf(results_df):
     buffer = BytesIO()
     with PdfPages(buffer) as pdf:
-        # Table page
-        fig_table, ax = plt.subplots(figsize=(12, len(results_df)*0.5 + 1))
+        fig_table, ax = plt.subplots(figsize=(14, len(results_df) * 0.6 + 2))
         ax.axis('off')
-        table = ax.table(cellText=results_df.values, colLabels=results_df.columns, loc='center')
+
+        table = ax.table(
+            cellText=results_df.values,
+            colLabels=results_df.columns,
+            loc='center',
+            cellLoc='center'
+        )
+
         table.auto_set_font_size(False)
         table.set_fontsize(9)
-        table.scale(1, 1.5)
+        table.scale(1.2, 1.5)  # Wider spacing
         pdf.savefig(fig_table, bbox_inches='tight')
         plt.close(fig_table)
 
     buffer.seek(0)
     return buffer
 
-# ========== Streamlit App ==========
+# ================= Streamlit App =================
 
 st.set_page_config(page_title="CAGR & CDVI Analyzer", layout="wide")
-st.title("📈 Trend and Instability Analyzer by [SumanEcon]")
+st.title("📈 CAGR,Instability Analyzer by Suman_Econ UAS(B)")
 
 st.markdown("""
 Welcome to the **CAGR & CDVI Analyzer**!
 
-🔹 **CAGR (Compound Annual Growth Rate)** measures consistent annual growth.  
-🔹 **CDVI (Cuddy-Della Valle Index)** measures instability after adjusting for the trend.
+🔹 **CAGR** – Compound Annual Growth Rate  
+🔹 **CDVI** – Cuddy-Della Valle Index (instability after removing trend)
 
-👉 Upload your dataset with the **first column as Year or Date**, and the rest as numeric indicators.
-
-🧪 Choose individual indicators or **"All"** to analyze multiple.
+👉 First column = **Year/Time**  
+👉 Rest = **Indicators** (Prices, Area, Production, etc.)
 """)
 
 uploaded_file = st.file_uploader("Upload a CSV, XLSX, or XLS file", type=["csv", "xlsx", "xls"])
@@ -80,14 +85,12 @@ if uploaded_file:
     time_col = data.columns[0]
     numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
 
-    col_option = st.selectbox("Select a column for analysis", options=["All"] + numeric_cols)
+    selected_cols = st.multiselect("Select columns for analysis", options=numeric_cols, default=numeric_cols)
 
     results = []
 
     if st.button("Run Analysis"):
-        columns_to_analyze = numeric_cols if col_option == "All" else [col_option]
-
-        for column in columns_to_analyze:
+        for column in selected_cols:
             temp_df = data[[time_col, column]].dropna()
             if temp_df.empty or temp_df[column].isnull().all():
                 continue
@@ -131,20 +134,21 @@ if uploaded_file:
         excel = BytesIO()
         results_df.to_excel(excel, index=False, engine='xlsxwriter')
         excel.seek(0)
-        st.download_button("Download CSV", csv, file_name="CAGR_CDVI_Results.csv")
-        st.download_button("Download Excel", excel, file_name="CAGR_CDVI_Results.xlsx")
+
+        st.download_button("📥 Download CSV", csv, file_name="CAGR_CDVI_Results.csv")
+        st.download_button("📥 Download Excel", excel, file_name="CAGR_CDVI_Results.xlsx")
 
         # ---- Generate and Download PDF Summary ----
-        st.markdown("### 🧾 Download Full PDF Report")
+        st.subheader("📄 Download PDF Report (Table Only)")
         pdf_bytes = generate_pdf(results_df)
-        st.download_button("Download PDF Report", pdf_bytes, file_name="CAGR_CDVI_Report.pdf", mime="application/pdf")
+        st.download_button("📥 Download PDF", pdf_bytes, file_name="CAGR_CDVI_Report.pdf", mime="application/pdf")
 
         # ---- Policy Briefs ----
         st.subheader("📌 Policy Brief Suggestions")
         for idx, row in results_df.iterrows():
             if row['Interpretation'] != "Error":
                 st.markdown(f"""
-                **{row['Indicator']}:**
-                - {row['Interpretation']}
-                - 📈 **Policy Tip:** For `{row['Indicator']}`, consider policies to {"enhance growth" if row['CAGR (%)'] > 0 else "arrest decline"}, and if CDVI is high, ensure **price stabilization**, market intelligence, and infrastructure for storage or value addition.
+                **{row['Indicator']}**
+                - 📈 *{row['Interpretation']}*
+                - 💡 **Policy Tip**: For `{row['Indicator']}`, consider policy actions to {"boost growth" if row['CAGR (%)'] > 0 else "mitigate decline"} and reduce instability. High CDVI suggests supporting **price risk management**, **cold storage**, or **market assurance** programs.
                 """)
