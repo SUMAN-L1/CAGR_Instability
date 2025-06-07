@@ -5,7 +5,7 @@ from math import sqrt
 from statsmodels.formula.api import ols
 from io import BytesIO
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.backends.backend_pdf import PdfPages 
 
 # ================= Function Definitions =================
 
