@@ -155,8 +155,10 @@ if uploaded_file:
         st.subheader("📌 Policy Brief Suggestions")
         for idx, row in results_df.iterrows():
             if row['Interpretation'] != "Error":
+                # Convert 'CAGR (%)' back to float for comparison
+                cagr_value = float(row['CAGR (%)'])
                 st.markdown(f"""
                 **{row['Indicator']}**
                 - 📈 *{row['Interpretation']}*
-                - 💡 **Policy Tip**: For `{row['Indicator']}`, consider policy actions to {"boost growth" if row['CAGR (%)'] > 0 else "mitigate decline"} and reduce instability. High CDVI suggests supporting **price risk management**, **cold storage**, or **market assurance** programs.
+                - 💡 **Policy Tip**: For `{row['Indicator']}`, consider policy actions to {"boost growth" if cagr_value > 0 else "mitigate decline"} and reduce instability. High CDVI suggests supporting **price risk management**, **cold storage**, or **market assurance** programs.
                 """)
