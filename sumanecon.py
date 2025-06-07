@@ -85,7 +85,14 @@ if uploaded_file:
     time_col = data.columns[0]
     numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
 
-    selected_cols = st.multiselect("Select columns for analysis", options=numeric_cols, default=numeric_cols)
+    options = ["All"] + numeric_cols
+    selected_raw = st.multiselect("Select columns for analysis", options=options, default=["All"])
+
+    # Interpret "All" as all numeric columns
+if "All" in selected_raw:
+    selected_cols = numeric_cols
+else:
+    selected_cols = selected_raw
 
     results = []
 
