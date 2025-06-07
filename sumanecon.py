@@ -59,7 +59,7 @@ def generate_pdf(results_df):
 # ================= Streamlit App =================
 
 st.set_page_config(page_title="CAGR & CDVI Analyzer", layout="wide")
-st.title("📈 CAGR,Instability Analyzer by Suman_Econ UAS(B)")
+st.title("📈 Trend and Instability Analyzer by [SumanEcon]")
 
 st.markdown("""
 Welcome to the **CAGR & CDVI Analyzer**!
@@ -85,14 +85,15 @@ if uploaded_file:
     time_col = data.columns[0]
     numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
 
+    # ========== Column Selection ==========
     options = ["All"] + numeric_cols
     selected_raw = st.multiselect("Select columns for analysis", options=options, default=["All"])
 
-    # Interpret "All" as all numeric columns
-if "All" in selected_raw:
-    selected_cols = numeric_cols
-else:
-    selected_cols = selected_raw
+    # If "All" is selected, override others
+    if "All" in selected_raw:
+        selected_cols = numeric_cols
+    else:
+        selected_cols = selected_raw
 
     results = []
 
