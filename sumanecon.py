@@ -59,7 +59,7 @@ def generate_pdf(results_df):
 # ================= Streamlit App =================
 
 st.set_page_config(page_title="CAGR & CDVI Analyzer", layout="wide")
-st.title("📈 Trend and Instability Analyzer app built by [Suman_Econ_UAS(B)]")
+st.title("📈 CAGR and Instability Analyzer app built by [Suman_Econ_UAS(B)]")
 
 st.markdown("""
 Welcome to the **CAGR & CDVI Analyzer**!
