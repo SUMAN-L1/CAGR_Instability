@@ -162,3 +162,12 @@ if uploaded_file:
                 - 📈 *{row['Interpretation']}*
                 - 💡 **Policy Tip**: For `{row['Indicator']}`, consider policy actions to {"boost growth" if cagr_value > 0 else "mitigate decline"} and reduce instability. High CDVI suggests supporting **price risk management**, **cold storage**, or **market assurance** programs.
                 """)
+        # Footer
+        st.markdown("""
+        <hr style="border:1px solid #ccc" />
+        
+        <div style="text-align: center; font-size: 14px; color: gray;">
+            🚀 This app was built by <b>Suman L</b> <br>
+            📬 For support or collaboration, contact: <a href="mailto:sumanecon.uas@outlook.com">sumanecon.uas@outlook.com</a>
+        </div>
+        """, unsafe_allow_html=True)
